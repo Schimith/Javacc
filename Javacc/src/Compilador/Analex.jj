@@ -45,7 +45,7 @@ SKIP : { " " | "\t" | "\r" | "\n" }
 
 SKIP : {
 
-   "/*" : comentario
+   "/*" : comentario-teste
 
 }
 
