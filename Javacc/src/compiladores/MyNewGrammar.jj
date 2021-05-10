@@ -76,7 +76,7 @@ TOKEN :
 | 	<PRINT: "print" > 
 | 	<INPUT: "input" > 
 |  	<VAR: <LETRA> (<LETRA>|<DIGITO>)* > 
-| 	<LETRA: ["a"-"z"] > 
+| 	<LETRA: ["a"-"z"] | ["a"-"z"](["a"-"z"]|["A"-"Z"])+ | ["A"-"Z"](["a"-"z"]|["A"-"Z"])+> 
 | 	<DIGITO: ["0"-"9"]  > 
 | 	<POTENCIA: "^" > 
 | 	<VIRGULA: "," > 
