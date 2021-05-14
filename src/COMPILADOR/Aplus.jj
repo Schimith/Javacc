@@ -1,0 +1,202 @@
+/**
+ * JavaCC template file created by SF JavaCC plugin 1.5.28+ wizard for JavaCC 1.5.0+
+ */options {
+  // static = true;
+  JAVA_UNICODE_ESCAPE = true;
+  JDK_VERSION = "1.5";
+  DEBUG_PARSER = false;
+  DEBUG_TOKEN_MANAGER = false;
+}PARSER_BEGIN(Aplus)package COMPILADOR;
+
+import java.io.*;
+
+
+public class Aplus{  public static void main(String args []) throws ParseException  { 
+     Aplus ap = null;
+      try {
+         ap = new Aplus(new FileInputStream(args[0]));
+      }
+      catch(FileNotFoundException e) {
+         System.out.println("Erro: arquivo não encontrado");
+      }
+      catch(TokenMgrError e) {
+         System.out.println("Erro léxico\n" + e.getMessage());
+      }	}}
+PARSER_END(Aplus)
+
+TOKEN : /* OPERATORS */
+{
+  < SOMA : "+" >
+| < SUBTRACAO : "-" >
+| < MULTIPLICACAO : "*" >
+| < DIVISAO : "/" >
+}
+
+TOKEN :
+{
+  < CONSTANT : (< DIGITO >)+ >
+| 	<STRING: "texto">  
+| 	<INTEGER: "integer" > 
+| 	<PRINT: "print" > 
+| 	<INPUT: "input" > 
+|  	<VAR: <LETRA> (<LETRA>|<DIGITO>)* > 
+| 	<LETRA: ["a"-"z"] | ["a"-"z"](["a"-"z"]|["A"-"Z"])+ | ["A"-"Z"](["a"-"z"]|["A"-"Z"])+> 
+| 	<DIGITO: ["0"-"9"]  > 
+| 	<POTENCIA: "^" > 
+| 	<VIRGULA: "," > 
+| 	<RESTO_DIVISAO: "%" > 
+| 	<IGUAL: "==" > 
+| 	<ATRIBUICAO: ":" > 
+| 	<ABRE_PARENTESES: "(" > 
+| 	<FECHA_PARENTESES: ")" > 
+| 	<MAIOR: ">" > 
+| 	<MAIOR_IGUAL: " >=" > 
+| 	<MENOR: "<" > 
+| 	<MENOR_IGUAL: ">=" > 
+| 	<CONCATENACAO: "\\" > 
+| 	<QUEBRA_LINHA: "\n" > 
+| 	<TABULACAO: "\t" > 
+| 	<CONSTANTE_TEXTO: "\"" ( ~["\"","\n","\r"])* "\"" > 
+| 	<CONSTANTE_NUMERO: ((["0"-"9"])* (".")? (["0"-"9"])+)  > 
+| 	<ENQUANTO: "ENQUANTO" > 
+| 	<SE: "SE" > 
+| 	<SENAO: "SENAO" > 
+| 	<VERDADEIRO: "true" > 
+| 	<FALSE: "false" >
+| 	<THEN: "THEN" >
+| 	<FIMSE: "FIMSE" >
+| 	<FIMENQUANTO: "FIMENQUANTO" >
+| 	<BEGIN: "BEGIN" >
+| 	<END: "END" >
+|   <OR: "OR" >
+| 	<AND: "AND" >
+| 	<NOT: "NOT" >
+| 	<DIFERENTE: "!=" >
+
+
+}
+
+
+
+
+void inicio() : {}
+{
+	 <BEGIN> BLOCO() <END> <EOF> 
+}
+
+void BLOCO(): {}
+{
+  (DECVARIAVEL())* (COMANDOS())*
+}
+
+void DECVARIAVEL(): {}
+{
+  <VAR> <ATRIBUICAO> type() (<VIRGULA> <VAR> <ATRIBUICAO> type())*
+}
+
+void type(): { }
+{
+  <STRING> | <INTEGER> 
+}
+
+
+void COMANDOS(): {}
+{
+  SE() | ENQUANTO() | expression() | INPUT()| PRINT() 
+}
+
+void PRINT(): {}
+{
+  <PRINT> <ABRE_PARENTESES> <VAR> <FECHA_PARENTESES>
+}
+
+void INPUT(): {}
+{
+ 	<VAR> <ATRIBUICAO> <INPUT> <ABRE_PARENTESES> expression() <FECHA_PARENTESES>
+}
+
+void SE() : {}
+{
+
+	<SE> <ABRE_PARENTESES>expression()<FECHA_PARENTESES> <THEN > (COMANDOS())* (SENAO())? <FIMSE>
+	
+}
+
+void SENAO() : {}
+{
+	<SENAO> (COMANDOS())*
+}
+
+void ENQUANTO() : {}
+{
+	<ENQUANTO> <ABRE_PARENTESES>expression()<FECHA_PARENTESES>  (COMANDOS())*  <FIMENQUANTO>
+}
+
+Expressao expression() : {} {
+	expAuxiliar()
+}	
+
+void expAuxiliar() : {} {
+	termo()
+}	
+
+
+
+
+
+void termo() : {}
+{
+	termo1()(<OR> termo1())*	
+}
+
+void termo1() : {}
+{
+	termo2()(<AND> termo2())*
+
+}
+
+void termo2() : {}
+{
+	 termo3()((<MAIOR> |<MENOR> | <MAIOR_IGUAL> | <MENOR_IGUAL> | <DIFERENTE> | <IGUAL>)termo3())*
+}
+
+void  termo3() : {}
+{
+	termo4()(<SOMA> termo4()|<SUBTRACAO> termo4())*
+
+}
+
+void  termo4() : {}
+{
+
+	 termo5()( <MULTIPLICACAO> termo5()| <DIVISAO> termo5())*
+
+}
+
+void  termo5() : {}
+{
+
+	termo6()(<POTENCIA> termo5())*  
+
+}
+void  termo6() : {}
+{
+
+	(<NOT>)* termo7()
+
+}
+
+void termo7() : {}
+{
+	(<SUBTRACAO> |<SOMA>)? <CONSTANTE_NUMERO>
+	|
+	 <VAR>
+	| 
+	 <STRING>
+	| 
+	 <ABRE_PARENTESES> expAuxiliar() <FECHA_PARENTESES>
+}
+
+
+
+
