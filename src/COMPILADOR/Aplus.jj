@@ -31,49 +31,52 @@ TOKEN : /* OPERATORS */
 | < MULTIPLICACAO : "*" >
 | < DIVISAO : "/" >
 }
+TOKEN [IGNORE_CASE] :  {
+	<CONSTANTE_NUMERO: ((["0"-"9"])* (".")? (["0"-"9"])+)  > 
+}
+
 
 TOKEN :
 {
-  < CONSTANT : (< DIGITO >)+ >
-| 	<STRING: "texto">  
-| 	<INTEGER: "integer" > 
-| 	<PRINT: "print" > 
-| 	<INPUT: "input" > 
-|  	<VAR: <LETRA> (<LETRA>|<DIGITO>)* > 
-| 	<LETRA: ["a"-"z"] | ["a"-"z"](["a"-"z"]|["A"-"Z"])+ | ["A"-"Z"](["a"-"z"]|["A"-"Z"])+> 
-| 	<DIGITO: ["0"-"9"]  > 
-| 	<POTENCIA: "^" > 
-| 	<VIRGULA: "," > 
-| 	<RESTO_DIVISAO: "%" > 
-| 	<IGUAL: "==" > 
-| 	<ATRIBUICAO: ":" > 
-| 	<ABRE_PARENTESES: "(" > 
-| 	<FECHA_PARENTESES: ")" > 
-| 	<MAIOR: ">" > 
-| 	<MAIOR_IGUAL: " >=" > 
-| 	<MENOR: "<" > 
-| 	<MENOR_IGUAL: ">=" > 
-| 	<CONCATENACAO: "\\" > 
-| 	<QUEBRA_LINHA: "\n" > 
-| 	<TABULACAO: "\t" > 
-| 	<CONSTANTE_TEXTO: "\"" ( ~["\"","\n","\r"])* "\"" > 
-| 	<CONSTANTE_NUMERO: ((["0"-"9"])* (".")? (["0"-"9"])+)  > 
-| 	<ENQUANTO: "ENQUANTO" > 
-| 	<SE: "SE" > 
-| 	<SENAO: "SENAO" > 
-| 	<VERDADEIRO: "true" > 
-| 	<FALSE: "false" >
-| 	<THEN: "THEN" >
-| 	<FIMSE: "FIMSE" >
-| 	<FIMENQUANTO: "FIMENQUANTO" >
-| 	<BEGIN: "BEGIN" >
-| 	<END: "END" >
-|   <OR: "OR" >
-| 	<AND: "AND" >
-| 	<NOT: "NOT" >
-| 	<DIFERENTE: "!=" >
-
-
+	  < CONSTANT : (< DIGITO >)+ >
+	| 	<STRING: "string">  
+	| 	<INTEGER: "integer" > 
+	| 	<PRINT: "print" > 
+	| 	<INPUT: "input" > 
+	|  	<VAR: "VAR" >
+	| 	<VAREXPRE: ["a"-"z"] (["a"-"z"] | ["0"-"9"])*>
+	| 	<LETRA: ["a"-"z"] | ["a"-"z"](["a"-"z"]|["A"-"Z"])+ | ["A"-"Z"](["a"-"z"]|["A"-"Z"])+> 
+	| 	<DIGITO: ["0"-"9"]  > 
+	| 	<POTENCIA: "^" > 
+	| 	<VIRGULA: "," > 
+	| 	<RESTO_DIVISAO: "%" > 
+	| 	<IGUAL: "==" > 
+	| 	<ATRIBUICAO: ":" > 
+	| 	<ABRE_PARENTESES: "(" > 
+	| 	<FECHA_PARENTESES: ")" > 
+	| 	<MAIOR: ">" > 
+	| 	<MAIOR_IGUAL: " >=" > 
+	| 	<MENOR: "<" > 
+	| 	<MENOR_IGUAL: ">=" > 
+	| 	<CONCATENACAO: "\\" > 
+	| 	<QUEBRA_LINHA: "\n" > 
+	| 	<TABULACAO: "\t" > 
+	| 	<CONSTANTE_TEXTO: "\"" ( ~["\"","\n","\r"])* "\"" > 
+	| 	<ENQUANTO: "enquanto" > 
+	| 	<SE: "se" > 
+	| 	<SENAO: "senao" > 
+	| 	<VERDADEIRO: "true" > 
+	| 	<FALSE: "false" >
+	| 	<THEN: "THEN" >
+	| 	<FIMSE: "FIMSE" >
+	| 	<FIMENQUANTO: "FIMENQUANTO" >
+	| 	<BEGIN: "BEGIN" >
+	| 	<END: "END" >
+	|   <OR: "OR" >
+	| 	<AND: "AND" >
+	| 	<NOT: "NOT" >
+	| 	<DIFERENTE: "!=" >
+	
 }
 
 
@@ -89,60 +92,58 @@ void BLOCO(): {}
   (DECVARIAVEL())* (COMANDOS())*
 }
 
-void DECVARIAVEL(): {}
-{
-  <VAR> <ATRIBUICAO> type() (<VIRGULA> <VAR> <ATRIBUICAO> type())*
+//***********************************
+void DECVARIAVEL() : {} {
+	( <STRING> | <INTEGER> ) listaVar()   
 }
 
-void type(): { }
-{
-  <STRING> | <INTEGER> 
+void listaVar() : {} {
+	itemListaVar() (itemListaVar() )*
 }
 
+void itemListaVar() : {} {
+	<VAREXPRE>(<ATRIBUICAO>expression())?
+}
+//********************************************
 
 void COMANDOS(): {}
 {
-  SE() | ENQUANTO() | expression() | INPUT()| PRINT() 
+  verificar() | loop()  | inserir()| mostrar() | expression()
 }
 
-void PRINT(): {}
+void verificar() : {}
 {
-  <PRINT> <ABRE_PARENTESES> <VAR> <FECHA_PARENTESES>
+	<SE> <ABRE_PARENTESES>expression()<FECHA_PARENTESES> <THEN > (COMANDOS())* (verificarSENAO())? <FIMSE>
 }
-
-void INPUT(): {}
-{
- 	<VAR> <ATRIBUICAO> <INPUT> <ABRE_PARENTESES> expression() <FECHA_PARENTESES>
-}
-
-void SE() : {}
-{
-
-	<SE> <ABRE_PARENTESES>expression()<FECHA_PARENTESES> <THEN > (COMANDOS())* (SENAO())? <FIMSE>
-	
-}
-
-void SENAO() : {}
+void verificarSENAO() : {}
 {
 	<SENAO> (COMANDOS())*
 }
 
-void ENQUANTO() : {}
+void loop() : {}
 {
 	<ENQUANTO> <ABRE_PARENTESES>expression()<FECHA_PARENTESES>  (COMANDOS())*  <FIMENQUANTO>
 }
 
-Expressao expression() : {} {
+void inserir(): {}
+{
+ 	<VAREXPRE> <ATRIBUICAO> <INPUT> <ABRE_PARENTESES> ((<CONSTANTE_TEXTO>)? <VAREXPRE>(<VAREXPRE>)*) <FECHA_PARENTESES>
+}
+
+void mostrar(): {}
+{
+  <PRINT> <ABRE_PARENTESES> <CONSTANTE_TEXTO> expression() <FECHA_PARENTESES>
+}
+
+
+void expression() : {} {
 	expAuxiliar()
+
 }	
 
 void expAuxiliar() : {} {
 	termo()
 }	
-
-
-
-
 
 void termo() : {}
 {
@@ -190,9 +191,9 @@ void termo7() : {}
 {
 	(<SUBTRACAO> |<SOMA>)? <CONSTANTE_NUMERO>
 	|
-	 <VAR>
+	 <VAREXPRE>
 	| 
-	 <STRING>
+	 <CONSTANTE_TEXTO>
 	| 
 	 <ABRE_PARENTESES> expAuxiliar() <FECHA_PARENTESES>
 }
