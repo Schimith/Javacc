@@ -92,7 +92,7 @@ void BLOCO(): {}
   (DECVARIAVEL())* (COMANDOS())*
 }
 
-//***********************************
+
 void DECVARIAVEL() : {} {
 	( <STRING> | <INTEGER> ) listaVar()   
 }
@@ -104,7 +104,7 @@ void listaVar() : {} {
 void itemListaVar() : {} {
 	<VAREXPRE>(<ATRIBUICAO>expression())?
 }
-//********************************************
+
 
 void COMANDOS(): {}
 {
