@@ -10,11 +10,23 @@
 
 import java.io.*;
 
+public class Aplus{
 
-public class Aplus{  public static void main(String args []) throws ParseException  { 
+  static HashMap tab = new HashMap();
+  static HashMap<Tabela> tab = new HashMap<Tabela>();
+     public static void main(String args []) throws ParseException  { 
      Aplus ap = null;
       try {
+        
          ap = new Aplus(new FileInputStream(args[0]));
+         inicioAplus();
+		System.out.println(tab);
+
+
+
+
+
+         
       }
       catch(FileNotFoundException e) {
          System.out.println("Erro: arquivo não encontrado");
@@ -44,7 +56,7 @@ TOKEN :
 	| 	<PRINT: "print" > 
 	| 	<INPUT: "input" > 
 	|  	<VAR: "VAR" >
-	| 	<VAREXPRE: ["a"-"z"] (["a"-"z"] | ["0"-"9"])*>
+	| 	<VAREXPRE: ["a"-"z"] (["a"-"z"] | ["0"-"9"])+>
 	| 	<LETRA: ["a"-"z"] | ["a"-"z"](["a"-"z"]|["A"-"Z"])+ | ["A"-"Z"](["a"-"z"]|["A"-"Z"])+> 
 	| 	<DIGITO: ["0"-"9"]  > 
 	| 	<POTENCIA: "^" > 
@@ -79,7 +91,23 @@ TOKEN :
 	
 }
 
+JAVACODE void inicioAplus()
 
+{
+
+   Token t;
+
+   do {
+
+      t = getNextToken();
+
+      System.out.println(tokenImage[t.kind]+"\t"+t.image);
+
+   }
+
+   while(t.kind != EOF);
+
+}
 
 
 void inicio() : {}
@@ -93,16 +121,29 @@ void BLOCO(): {}
 }
 
 
-void DECVARIAVEL() : {} {
-	( <STRING> | <INTEGER> ) listaVar()   
+void DECVARIAVEL() : {Simbolo simb; Token t; char tp;} {
+	( <STRING> {tp='s';} | <INTEGER> {tp='n';} )
+	listaVar(simb, t)   
 }
 
-void listaVar() : {} {
-	itemListaVar() (itemListaVar() )*
+void listaVar(Simbolo simb, Token t) : {} {
+	itemListaVar(simb, t) (itemListaVar(simb,t) )*
 }
 
-void itemListaVar() : {} {
-	<VAREXPRE>(<ATRIBUICAO>expression())?
+void itemListaVar(Simbolo simb, Token t) : {} {
+   t=<VAREXPRE>
+   {
+	  simb = new Simbolo();
+	  simb.setNome(t.image);
+	  tab.inclui(simb.nome, simb);
+   }
+  
+	(<ATRIBUICAO> t=<VAREXPRE>
+   {
+	  simb = new Simbolo();
+	  simb.setNome(t.image);
+	  tab.inclui(simb.nome, simb);
+   })?
 }
 
 
@@ -197,7 +238,7 @@ void termo7() : {}
 	| 
 	 <ABRE_PARENTESES> expAuxiliar() <FECHA_PARENTESES>
 }
-
+ 
 
 
 
