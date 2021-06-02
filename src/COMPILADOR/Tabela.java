@@ -1,44 +1,31 @@
 package COMPILADOR;
 
+import java.util.HashMap;
+
 public class Tabela {
-
-	private String nome;   
-	private char tipo;     
-	private int referencia;   
-	private static int marcador = 1;
-
-	public String getNome() {
-		return nome;
+	private HashMap<String, Simbolo>tab;
+	public Tabela() {
+		this.tab = new HashMap<String, Simbolo>();
+		
 	}
-	public void setNome(String nome) {
-		this.nome = nome;
+	public boolean inclu(Simbolo simbolo_valor) {
+		if(this.tab.containsKey(simbolo_valor.getNome())) {
+			return false;
+		}else
+			this.tab.put(simbolo_valor.getNome(),simbolo_valor);
+			return true;
 	}
-	public char getTipo() {
-		return tipo;
+	public int consultaReferencia(String chave) {
+		return ((Simbolo)this.tab.get(chave)).getReferencia();
 	}
-	public void setTipo(char tipo) {
-		this.tipo = tipo;
-	}
-	public int getReferencia() {
-		return referencia;
-	}
-	public void setReferencia(int referencia) {
-		this.referencia = referencia;
-	}
-	public static int getMarcador() {
-		return marcador;
-	}
-	public static void setMarcador(int marcador) {
-		Tabela.marcador = marcador;
-	} 
-
-	public String toString() {
-
-		return "\n" + "Nome:"+this.getNome() + "\t" + "Tipo:"+this.getTipo() + "\t" + "Referência:"+this.getReferencia();
-
+	public boolean isExistent(String chave) {
+		return this.tab.containsKey(chave);
 	}
 	
-
-
-
+	public String toString() {
+		return this.tab.toString();
+	}
+	
+	
+	
 }

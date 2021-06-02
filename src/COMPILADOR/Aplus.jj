@@ -12,15 +12,14 @@ import java.io.*;
 
 public class Aplus{
 
-  static HashMap tab = new HashMap();
-  static HashMap<Tabela> tab = new HashMap<Tabela>();
-     public static void main(String args []) throws ParseException  { 
+	static Tabela tabela = new Tabela();
+   public static void main(String args []) throws ParseException  { 
      Aplus ap = null;
       try {
         
          ap = new Aplus(new FileInputStream(args[0]));
          inicioAplus();
-		System.out.println(tab);
+		 System.out.println(tab);
 
 
 
@@ -121,29 +120,30 @@ void BLOCO(): {}
 }
 
 
-void DECVARIAVEL() : {Simbolo simb; Token t; char tp;} {
+void DECVARIAVEL(char tp) : {Simbolo simb; Token t; } {
 	( <STRING> {tp='s';} | <INTEGER> {tp='n';} )
-	listaVar(simb, t)   
+	listaVar(tp)   
 }
 
-void listaVar(Simbolo simb, Token t) : {} {
-	itemListaVar(simb, t) (itemListaVar(simb,t) )*
+void listaVar(char tp) : {Simbolo simb; Token t;} {
+	itemListaVar(tp) (itemListaVar(tp) )*
 }
 
-void itemListaVar(Simbolo simb, Token t) : {} {
+void itemListaVar(char tp) : {Simbolo simb; Token t;} {
    t=<VAREXPRE>
    {
-	  simb = new Simbolo();
-	  simb.setNome(t.image);
-	  tab.inclui(simb.nome, simb);
+     if(tabela.isExistent(t.image)) {
+		 System.err.println("Variavel Duplicada");
+      }else { 
+		  simb = new Simbolo(null);
+		  simb.setNome(t.image);
+		  sim.setTipo(tp);
+		  tab.inclui(simb);
+		}
    }
+   
   
-	(<ATRIBUICAO> t=<VAREXPRE>
-   {
-	  simb = new Simbolo();
-	  simb.setNome(t.image);
-	  tab.inclui(simb.nome, simb);
-   })?
+	(<ATRIBUICAO> expression() )?
 }
 
 
