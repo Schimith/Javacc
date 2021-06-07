@@ -9,23 +9,25 @@
 }PARSER_BEGIN(Aplus)package COMPILADOR;
 
 import java.io.*;
+import java.util.List;
+import java.util.LinkedList;
+
 
 public class Aplus{
 
 	static Tabela tabela = new Tabela();
-   public static void main(String args []) throws ParseException  { 
+
+ 	  public static void main(String args []) throws ParseException  { 
      Aplus ap = null;
       try {
         
          ap = new Aplus(new FileInputStream(args[0]));
          inicioAplus();
-		 System.out.println(tab);
+		 System.out.println(tabela);
+		 
 
+         System.out.println("\nTabela de Simbolos (Variaveis): \n\n"+tabela.toString());
 
-
-
-
-         
       }
       catch(FileNotFoundException e) {
          System.out.println("Erro: arquivo não encontrado");
@@ -120,7 +122,7 @@ void BLOCO(): {}
 }
 
 
-void DECVARIAVEL(char tp) : {Simbolo simb; Token t; } {
+void DECVARIAVEL() : {Simbolo simb; Token t;char tp; } {
 	( <STRING> {tp='s';} | <INTEGER> {tp='n';} )
 	listaVar(tp)   
 }
@@ -135,10 +137,10 @@ void itemListaVar(char tp) : {Simbolo simb; Token t;} {
      if(tabela.isExistent(t.image)) {
 		 System.err.println("Variavel Duplicada");
       }else { 
-		  simb = new Simbolo(null);
+		  simb = new Simbolo();
 		  simb.setNome(t.image);
-		  sim.setTipo(tp);
-		  tab.inclui(simb);
+		  simb.setTipo(tp);
+		  tabela.inclui(simb);
 		}
    }
    

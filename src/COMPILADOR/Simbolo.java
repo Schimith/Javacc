@@ -1,19 +1,53 @@
 package COMPILADOR;
 
 public class Simbolo {
-
+	
+	private static final long serialVersionUID = 11234L;
+	private static int tamanhoMaiorNome = 0;
 	private String nome;   
 	private char tipo;     
-	private int referencia;   
+	private int referencia;
 	private static int marcador = 1;
+	private boolean inicializada;
 	
-	public Simbolo(String nome_valor) {
-		this.nome = nome_valor;
-		this.referencia = Simbolo.marcador;
-		Simbolo.marcador = 2;
+	
+	public Simbolo() {
+		
 	}
 	
 	
+	public Simbolo(String nome_valor, char tipo) {
+		this.nome = nome_valor;
+		this.tipo = tipo;
+		this.referencia = Simbolo.marcador;
+		this.inicializada = false;
+		
+		setMarcador(tipo);
+		setTamanhoMaiorNome(nome.length());
+		System.out.println(marcador);
+	}
+	
+	
+	public static int getTamanhoMaiorNome() {
+		return tamanhoMaiorNome;
+	}
+
+
+	public static void setTamanhoMaiorNome(int tamanhoMaiorNome) {
+		Simbolo.tamanhoMaiorNome = tamanhoMaiorNome;
+	}
+
+
+	public boolean getInicializada() {
+		return inicializada;
+	}
+
+
+	public void setInicializada(boolean inicializada) {
+		this.inicializada = inicializada;
+	}
+
+
 	public String getNome() {
 		return nome;
 	}
