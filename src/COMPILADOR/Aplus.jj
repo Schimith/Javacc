@@ -16,7 +16,7 @@ import java.util.LinkedList;
 public class Aplus{
 
 	static Tabela tabela = new Tabela();
-
+	//static List<> listaComando = new LinkedList<>();
  	  public static void main(String args []) throws ParseException  { 
      Aplus ap = null;
       try {
@@ -179,66 +179,196 @@ void mostrar(): {}
 }
 
 
-void expression() : {} {
-	expAuxiliar()
+void expression() : { Expressao listaExp = new Expressao();} {
+	expAuxiliar(listaExp) {
+	  //return listaExp;
+	  }
 
 }	
 
-void expAuxiliar() : {} {
-	termo()
+void expAuxiliar(Expressao listaExp) : {Token t;Item item;} {
+	termo(listaExp)
 }	
 
-void termo() : {}
+void termo(Expressao listaExp) : {Token t;Item item;}
 {
-	termo1()(<OR> termo1())*	
+		termo1(listaExp) 
+	(
+		 t=<OR> termo1(listaExp)
+		 {
+		 	item = new Item('o', t.image);
+		 	listaExp.inclui(item);
+		 }
+    )*	
 }
 
-void termo1() : {}
-{
-	termo2()(<AND> termo2())*
-
-}
-
-void termo2() : {}
-{
-	 termo3()((<MAIOR> |<MENOR> | <MAIOR_IGUAL> | <MENOR_IGUAL> | <DIFERENTE> | <IGUAL>)termo3())*
-}
-
-void  termo3() : {}
-{
-	termo4()(<SOMA> termo4()|<SUBTRACAO> termo4())*
-
-}
-
-void  termo4() : {}
+void termo1(Expressao listaExp) : {Token t; Item item; }
 {
 
-	 termo5()( <MULTIPLICACAO> termo5()| <DIVISAO> termo5())*
+		termo2(listaExp) 
+	( 
+		t=<AND> termo2(listaExp)
+		{
+			item = new Item('o', t.image);
+		 	listaExp.inclui(item);
+		}
+	)*
 
 }
 
-void  termo5() : {}
+void termo2(Expressao listaExp) : {Token t; Item item; }
 {
 
-	termo6()(<POTENCIA> termo5())*  
+
+	 termo3(listaExp) 
+	 ( 
+	 	(t=<MAIOR> | t=<MENOR> | t=<MAIOR_IGUAL> | t=<MENOR_IGUAL> | t=<DIFERENTE> | t=<IGUAL>) 
+	     termo3(listaExp)
+	 	{
+	 		item = new Item('o', t.image);
+		 	listaExp.inclui(item);
+	 	}
+	 )*
+
+	 
+}
+
+void  termo3(Expressao listaExp) : {Token t; Item item; }
+{
+
+	termo4(listaExp) 
+	( 
+		t=<SOMA> termo4(listaExp)
+		{
+			if(!listaExp.otimizaExpressao('+') && !listaExp.otimizaString()){
+				item = new Item('o', t.image);
+				listaExp.inclui(item);	
+			}
+		}	
+		
+		| 
+		
+		t=<SUBTRACAO> termo4(listaExp)
+		{
+			if(!listaExp.otimizaExpressao('-')){
+				item = new Item('o', t.image);
+				listaExp.inclui(item);	
+			}
+    		
+		}
+	)*
+
 
 }
-void  termo6() : {}
+
+void  termo4(Expressao listaExp) : {Token t; Item item;}
 {
 
-	(<NOT>)* termo7()
+	 	 termo5(listaExp) 
+	(
+		 
+		  t=<MULTIPLICACAO> termo5(listaExp)
+		  {
+		  	if(!listaExp.otimizaExpressao('*')){
+				item = new Item('o', t.image);
+				listaExp.inclui(item);	
+			}
+		  }
+		   
+		 |
+		 
+		  t=<DIVISAO> termo5(listaExp)
+		 {
+		 	if(!listaExp.otimizaExpressao('/')){
+				item = new Item('o', t.image);
+				listaExp.inclui(item);	
+			}
+		 }
+	)*
 
 }
 
-void termo7() : {}
+void  termo5(Expressao listaExp) : {Token t; Item item;}
 {
+
+
+		termo6(listaExp) 
+	( 
+		t=<POTENCIA> termo5(listaExp) //Forma que encontrei para ser avaliado da direita para esquerda 
+		{
+			if(!listaExp.otimizaExpressao('^')){
+				item = new Item('o', t.image);
+				listaExp.inclui(item);	
+			}	
+		}
+	)*  
+
+}
+void  termo6(Expressao listaExp) : {Token t=null; Item item; int cont_OP_NOT=0;}
+{
+
+	//(<NOT>)* termo7(listaExp)
+
+		( t=<NOT> {cont_OP_NOT++;})* termo7(listaExp)
+	{// Se não tiver nenhum operador not não tem nehum operador a armazenar
+		if(t != null && (cont_OP_NOT % 2 != 0)){
+			item = new Item('o', t.image);
+			listaExp.inclui(item);
+		}	
+	}
+
+}
+
+void termo7(Expressao listaExp) : {Token t, t_aux=null; Item item; String num;}
+{
+  /*
 	(<SUBTRACAO> |<SOMA>)? <CONSTANTE_NUMERO>
 	|
 	 <VAREXPRE>
 	| 
 	 <CONSTANTE_TEXTO>
 	| 
-	 <ABRE_PARENTESES> expAuxiliar() <FECHA_PARENTESES>
+	 <ABRE_PARENTESES> expAuxiliar(listaExp) <FECHA_PARENTESES>*/
+
+
+	  (t_aux=<SUBTRACAO> | t_aux=<SOMA>)? t=<CONSTANTE_NUMERO>
+	  {
+	  	if(t_aux != null)
+	  		num = t_aux.image + t.image;
+	  	else	
+	  		num = t.image;
+	    item = new Item('n', num);
+        listaExp.inclui(item);
+	  }
+	  
+	  
+	|
+	
+	 t=<VAREXPRE>
+	  {
+		if(!tabela.isExistent(t.image))
+			System.err.println("ERRO!\n Erro Semantico: A váriavel \"" + t.image + "\" não foi declarada\n");
+	  }
+	  {
+	  	if(!tabela.foiInicializado(t.image))
+	  		System.err.println("ERRO!\n Erro Semantico: A váriavel \"" + t.image + "\" não foi inicializada\n");
+	  }
+	  {
+		item = new Item('v', t.image);
+       	listaExp.inclui(item);	
+      }	 
+      
+	| 
+	
+	 t=<CONSTANTE_TEXTO>
+	 {
+		item = new Item('s', t.image);
+       	listaExp.inclui(item);	
+	 }
+	 
+	| 
+	 <ABRE_PARENTESES> expAuxiliar(listaExp) <FECHA_PARENTESES>
+	 
 }
  
 

@@ -31,7 +31,7 @@ public class Tabela {
 		return tab.size();
 	}
 	
-	public boolean foiInicicializado(String nome) {
+	public boolean foiInicializado(String nome) {
 		Simbolo simb;
 		simb =  this.getSimbolo(nome);
 		
