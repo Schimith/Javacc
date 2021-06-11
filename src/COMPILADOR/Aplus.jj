@@ -16,7 +16,7 @@ import java.util.LinkedList;
 public class Aplus{
 
 	static Tabela tabela = new Tabela();
-	//static List<> listaComando = new LinkedList<>();
+	static List<Comando> listaComando = new LinkedList<Comando>();
  	  public static void main(String args []) throws ParseException  { 
      Aplus ap = null;
       try {
@@ -111,27 +111,30 @@ JAVACODE void inicioAplus()
 }
 
 
-void inicio() : {}
+void inicio(List<Comando> lista) : {}
 {
-	 <BEGIN> BLOCO() <END> <EOF> 
+	 <BEGIN> BLOCO(lista) <END> <EOF> 
 }
 
-void BLOCO(): {}
+void BLOCO(List<Comando> lista): {}
 {
-  (DECVARIAVEL())* (COMANDOS())*
+  (DECVARIAVEL())* (COMANDOS(lista))*
+     {
+      System.out.println(lista);
+   }
 }
 
 
-void DECVARIAVEL() : {Simbolo simb; Token t;char tp; } {
+void DECVARIAVEL() : {char tp; } {
 	( <STRING> {tp='s';} | <INTEGER> {tp='n';} )
 	listaVar(tp)   
 }
 
-void listaVar(char tp) : {Simbolo simb; Token t;} {
+void listaVar(char tp) : {} {
 	itemListaVar(tp) (itemListaVar(tp) )*
 }
 
-void itemListaVar(char tp) : {Simbolo simb; Token t;} {
+void itemListaVar(char tp) : {Simbolo simb; Token t;Expressao expre; boolean tipoCerto;} {
    t=<VAREXPRE>
    {
      if(tabela.isExistent(t.image)) {
@@ -145,43 +148,207 @@ void itemListaVar(char tp) : {Simbolo simb; Token t;} {
    }
    
   
-	(<ATRIBUICAO> expression() )?
+	(<ATRIBUICAO> expre = expression()
+			{//Ação semântica para verificar se a váriavel está recebendo uma expressão compatível com seu tipo	
+			if(tp == 'n')
+				tipoCerto = expre.isExpressaoNumerica(tabela);
+			else
+				tipoCerto = expre.isExpressaoTexto();
+		
+			if(!tipoCerto)
+				System.err.println("ERRO!\n Erro Semântico: O tipo da variavel \"" + t.image + "\" não é compatível com a expressão atribuida"+"\n");
+						
+		}
+		{// Ação semãntica para incluir na tabela que variavel foi inicializada
+			tabela.inicializaIdent(t.image);
+	    }
+	  )?
 }
 
 
-void COMANDOS(): {}
+
+void COMANDOS(List<Comando> lista): {}
 {
-  verificar() | loop()  | inserir()| mostrar() | expression()
+	atribuicaovalores(lista)| verificar(lista) | loop(lista)  | inserir(lista)| mostrar(lista)
 }
 
-void verificar() : {}
+void atribuicaovalores(List<Comando> lista) : {Comando comando = new Comando('A');Token t; Expressao expre; boolean tipoCerto; boolean foiDeclarada=true;} 
 {
-	<SE> <ABRE_PARENTESES>expression()<FECHA_PARENTESES> <THEN > (COMANDOS())* (verificarSENAO())? <FIMSE>
+	t=<VAREXPRE>
+	{comando.setRef1(t.image);}
+	{// Ação semãntica para verificar se variavel foi declarada 
+		if(!tabela.isExistent(t.image)){
+			System.err.println("ERRO!\n Erro Semantico: A váriavel \"" + t.image + "\" não foi declarada\n");
+			foiDeclarada = false;
+		}	
+	}
+
+	<ATRIBUICAO>
+	expre = expression()
+	
+	{
+		comando.setRef2(expre);
+	}
+
+		{
+		if(foiDeclarada){
+			if(tabela.getSimbolo(t.image).getTipo() == 'n')
+				tipoCerto = expre.isExpressaoNumerica(tabela);
+			else
+				tipoCerto = expre.isExpressaoTexto();
+		
+			if(!tipoCerto)
+		    	System.err.println("ERRO!\n Erro Semântico: O tipo da variavel \"" + t.image + "\" não é compatível com a expressão atribuida"+"\n");
+		}    
+	}
+	{
+		tabela.inicializaIdent(t.image);
+		lista.add(comando);
+	}
+	
 }
-void verificarSENAO() : {}
+
+
+void verificar(List<Comando> lista) : {LinkedList<Comando> listaSe = new LinkedList<Comando>();Comando verificar = new Comando('S');Expressao expre;}
 {
-	<SENAO> (COMANDOS())*
-}
+	<SE> <ABRE_PARENTESES>
 
-void loop() : {}
+	expre = expression()
+	{
+	 verificar.setRef1(expre);
+	 
+	//Verifica se a expressao utilizada na condicao é compativel
+	if(!expre.isExpressaoCondicional(tabela))
+		System.err.println("ERRO!\n Erro Semântico: A condição utilizada na estrutura se(){} não é compatível\n");
+	}
+
+	<FECHA_PARENTESES> <THEN >
+
+
+	(COMANDOS(listaSe))* (verificarSENAO(lista,verificar))?
+		{
+		lista.add(verificar);
+	}
+	<FIMSE>
+}
+void verificarSENAO(List<Comando> lista,Comando verificar) : {LinkedList<Comando> listaSenao = new LinkedList<Comando>();}
 {
-	<ENQUANTO> <ABRE_PARENTESES>expression()<FECHA_PARENTESES>  (COMANDOS())*  <FIMENQUANTO>
+	<SENAO> (COMANDOS(listaSenao))*
+
+		{
+		verificar.setRef3(listaSenao);
+	}  //pegunta se preciso colocar a variavel de finalização
 }
 
-void inserir(): {}
+void loop(List<Comando> lista) : {LinkedList<Comando> listaEnquanto = new LinkedList<Comando>();Comando loop = new Comando('E');Expressao expre;}
 {
- 	<VAREXPRE> <ATRIBUICAO> <INPUT> <ABRE_PARENTESES> ((<CONSTANTE_TEXTO>)? <VAREXPRE>(<VAREXPRE>)*) <FECHA_PARENTESES>
+	<ENQUANTO>
+	<ABRE_PARENTESES>
+		expre = expression()
+		{
+			loop.setRef1(expre);
+			
+			//Verifica se a expressao utilizada na condicao é compativel
+				if(!expre.isExpressaoCondicional(tabela))
+					System.err.println("ERRO!\n Erro Semântico: A condição utilizada na estrutura enquanto(){} não é compatível\n");
+			 }	
+	<FECHA_PARENTESES>
+	(COMANDOS(listaEnquanto))*
+		  {
+	  	loop.setRef2(listaEnquanto);
+	  	lista.add(loop);
+	  }
+	<FIMENQUANTO>
 }
 
-void mostrar(): {}
+void inserir(List<Comando> lista): {}
 {
-  <PRINT> <ABRE_PARENTESES> <CONSTANTE_TEXTO> expression() <FECHA_PARENTESES>
+ 	<INPUT> <ABRE_PARENTESES> corpoLeia(lista)  <FECHA_PARENTESES>
+}
+
+void corpoLeia(List<Comando> lista) : {Comando comandoImprime = new Comando('I');Comando comandoLeia = new Comando('L');Token t;}
+{
+
+	 (t=<STRING> <VIRGULA>
+	   {
+	   	 comandoImprime.setRef1(t.image);
+	   	 lista.add(comandoImprime);
+	   }
+	 )?
+	 
+	  t=<VAREXPRE>
+	  
+	  {
+	  	comandoLeia.setRef1(t.image);
+	  	lista.add(comandoLeia);
+	  } 
+	  
+	 {
+		if(!tabela.isExistent(t.image))
+			System.err.println("ERRO!\n Erro Semantico: A váriavel \"" + t.image + "\" não foi declarada\n");
+     }	
+     {// Ação semãntica para incluir na tabela que variavel foi inicializada
+		tabela.inicializaIdent(t.image);
+	 } 
+  
+    (
+    	<VIRGULA> t=<VAREXPRE>
+    	
+    	{
+	  	    comandoLeia.setRef1(t.image);
+	  	    lista.add(comandoLeia);
+	    }
+    	
+    	{
+    		if(!tabela.isExistent(t.image))
+				System.err.println("ERRO!\n Erro Semantico: A váriavel \"" + t.image + "\" não foi declarada\n");
+    	}
+    	{// Ação semãntica para incluir na tabela que variavel foi inicializada
+			tabela.inicializaIdent(t.image);
+		}
+    )*
+	
+}
+
+void mostrar(List<Comando> lista): {Expressao expre;}
+{
+  <PRINT> <ABRE_PARENTESES> <CONSTANTE_TEXTO> corpoExibe(lista) <FECHA_PARENTESES>
 }
 
 
-void expression() : { Expressao listaExp = new Expressao();} {
+void corpoExibe(List<Comando> lista) : {Expressao expre;Comando comandoExibe = new Comando('I');Token t;}
+{	
+	/*
+	   (t=<STRING> <VIRGULA> 
+	        {
+	           comandoExibe.setRef1(t.image);
+	   	       lista.add(comandoExibe);
+	        }
+	    )?
+	   */ 
+	    
+	    expre = expression()
+	    
+	    
+	    {
+	    	
+	    	
+			if(!expre.isExpressaoTexto())
+				System.err.println("ERRO!\n Erro Semântico: A expressão utilizada na estrutura exibe() não é compatível\n");
+	    	 
+	    	comandoExibe.setRef1(expre);
+	    	lista.add(comandoExibe);
+	    }
+	    
+	    
+	
+}
+
+
+
+Expressao expression() : { Expressao listaExp = new Expressao();} {
 	expAuxiliar(listaExp) {
-	  //return listaExp;
+	  return listaExp;
 	  }
 
 }	

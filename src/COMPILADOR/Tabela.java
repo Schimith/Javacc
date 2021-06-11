@@ -21,8 +21,9 @@ public class Tabela {
 	}
 	
 	public int consultaReferencia(String chave) {
-		return ((Simbolo)this.tab.get(chave)).getReferencia();
+		return this.tab.get(chave).getReferencia();
 	}
+	
 	public boolean isExistent(String chave) {
 		return this.tab.containsKey(chave);
 	}
@@ -30,6 +31,11 @@ public class Tabela {
 	public int getNumeroSimbolos() {
 		return tab.size();
 	}
+	
+	public int getMarcador() {
+		return Simbolo.getMarcador();
+	}
+	
 	
 	public boolean foiInicializado(String nome) {
 		Simbolo simb;
@@ -40,7 +46,13 @@ public class Tabela {
 		}
 		
 		return false;
-		
+	}
+	
+	public void inicializaIdent(String nome) {
+		Simbolo simb = this.getSimbolo(nome);
+		if(simb !=null) {
+			simb.setInicializada(true);
+		}
 	}
 	
 	
