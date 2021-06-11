@@ -22,8 +22,9 @@ public class Aplus{
       try {
         
          ap = new Aplus(new FileInputStream(args[0]));
-         inicioAplus();
-		 System.out.println(tabela);
+         inicio(listaComando);
+         
+		// IO.gravarObjetos("arquivo.bin", new Object[] {listaComando, tabela});
 		 
 
          System.out.println("\nTabela de Simbolos (Variaveis): \n\n"+tabela.toString());
@@ -91,7 +92,7 @@ TOKEN :
 	| 	<DIFERENTE: "!=" >
 	
 }
-
+/*
 JAVACODE void inicioAplus()
 
 {
@@ -109,7 +110,7 @@ JAVACODE void inicioAplus()
    while(t.kind != EOF);
 
 }
-
+*/
 
 void inicio(List<Comando> lista) : {}
 {
