@@ -4,7 +4,7 @@ import java.util.HashMap;
 
 public class Tabela {
 	
-	private static final long serialVersionUID = 11234L;
+	
 	private HashMap<String, Simbolo>tab = new HashMap<String, Simbolo>();
 	
 

@@ -119,23 +119,23 @@ void inicio(List<Comando> lista) : {}
 
 void BLOCO(List<Comando> lista): {}
 {
-  (DECVARIAVEL())* (COMANDOS(lista))*
+  (DECVARIAVEL(lista))* (COMANDOS(lista))*
      {
       System.out.println(lista);
    }
 }
 
 
-void DECVARIAVEL() : {char tp; } {
+void DECVARIAVEL(List<Comando> lista) : {char tp; } {
 	( <STRING> {tp='s';} | <INTEGER> {tp='n';} )
-	listaVar(tp)   
+	listaVar(lista,tp)   
 }
 
-void listaVar(char tp) : {} {
-	itemListaVar(tp) (itemListaVar(tp) )*
+void listaVar(List<Comando> lista,char tp) : {} {
+	itemListaVar(lista,tp) (itemListaVar(lista,tp))*
 }
 
-void itemListaVar(char tp) : {Simbolo simb; Token t;Expressao expre; boolean tipoCerto;} {
+void itemListaVar(List<Comando> lista,char tp) : {Comando comando = new Comando('U');Simbolo simb; Token t;Expressao expre; boolean tipoCerto;} {
    t=<VAREXPRE>
    {
      if(tabela.isExistent(t.image)) {
@@ -150,6 +150,11 @@ void itemListaVar(char tp) : {Simbolo simb; Token t;Expressao expre; boolean tip
    
   
 	(<ATRIBUICAO> expre = expression()
+
+		{
+		comando.setRef2(expre);
+			}
+	
 			{//Ação semântica para verificar se a váriavel está recebendo uma expressão compatível com seu tipo	
 			if(tp == 'n')
 				tipoCerto = expre.isExpressaoNumerica(tabela);
@@ -162,6 +167,7 @@ void itemListaVar(char tp) : {Simbolo simb; Token t;Expressao expre; boolean tip
 		}
 		{// Ação semãntica para incluir na tabela que variavel foi inicializada
 			tabela.inicializaIdent(t.image);
+			lista.add(comando);
 	    }
 	  )?
 }
